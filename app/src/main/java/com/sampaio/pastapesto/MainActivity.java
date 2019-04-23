@@ -1,6 +1,7 @@
 package com.sampaio.pastapesto;
 
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -20,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TTS_TAG = "TTS";
     private TextView mNewWord;
     private TextView mTotalPoints;
+    private TextView mTimer;
+    private CountDownTimer mCountDownTimer;
     private static final String[] availableWords = new String[]{"Pasta", "Pesto"};
     private static final int FIRST = 0;
     private static final int SECOND = 1;
@@ -53,8 +56,34 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        mTimer = findViewById(R.id.timer);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+        }
+        mCountDownTimer = new CountDownTimer(10000, 1000) {
+            public void onTick(long millisUntilFinished) {
+                long seconds = millisUntilFinished / 1000;
+                mTimer.setText(String.valueOf(seconds));
+            }
+
+            public void onFinish() {
+                youLose();
+            }
+        }.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mCountDownTimer != null) {
+            mCountDownTimer.cancel();
+        }
+    }
     public void pastaClicked(View view) {
         wordClicked(FIRST);
     }
@@ -91,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void youLose(){
+        mCountDownTimer.cancel();
         say("YOU LOSE BITCH, MAMA MIA");
         mWordStack = new Stack<>();
         Intent gameOver = new Intent();
